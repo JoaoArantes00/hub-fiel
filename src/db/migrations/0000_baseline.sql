@@ -1,0 +1,3 @@
+-- Baseline da Fase 0: migration vazia, sem tabelas de domínio.
+-- Existe para validar que o pipeline de migrations é executável (local e CI).
+-- O schema de domínio começa na Fase 1.

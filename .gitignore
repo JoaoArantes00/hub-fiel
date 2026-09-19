@@ -1,0 +1,31 @@
+# dependências
+node_modules/
+
+# build do Next.js
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+# testes e relatórios
+coverage/
+playwright-report/
+test-results/
+
+# variáveis de ambiente e segredos (só o .env.example é versionado)
+.env
+.env.*
+!.env.example
+*.pem
+
+# deploy
+.vercel/
+
+# logs
+*.log
+
+# sistema operacional / OneDrive
+.DS_Store
+Thumbs.db
+desktop.ini
