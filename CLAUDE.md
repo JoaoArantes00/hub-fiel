@@ -25,7 +25,8 @@ Se qualquer instrução deste arquivo (ou do `AGENTS.md`) conflitar com esses do
 - Variáveis de ambiente passam por `getEnv()` em `src/config/env.ts` (validação lazy com Zod). Não leia `process.env` direto no código da aplicação. Variável nova entra no schema e no `.env.example`.
 - Nunca versione `.env*`, exceto `.env.example`.
 - TypeScript (~6.0) e ESLint (9) estão fixados por incompatibilidade de ferramentas. Antes de atualizar, leia F0-01 e F0-02 em `docs/DECISIONS.md`.
-- Testes de integração com banco só rodam com `DATABASE_URL` definida no ambiente do shell (o Vitest não lê `.env.local`).
+- Testes de integração com banco só rodam com `DATABASE_URL` definida no ambiente do shell (o Vitest não lê `.env.local`). Cada arquivo cria e apaga um banco temporário próprio (`src/db/testing/`), então essa URL deve apontar para um PostgreSQL local/descartável, nunca produção.
+- Schema: o `updated_at` é mantido por trigger no banco (migration `0002`). Tabela nova com `updated_at` precisa de um trigger equivalente numa migration nova. Nomes de constraint devem ter no máximo 63 caracteres.
 - Windows: no PowerShell 5.1, `Set-Content -Encoding utf8` grava BOM e quebra JSON (já aconteceu com o `package.json`). Prefira as ferramentas de edição de arquivos.
 
 ## Next.js

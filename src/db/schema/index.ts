@@ -1,3 +1,10 @@
-// Schema de domínio começa na Fase 1 (clubs, teams, people, ...).
-// Na Fase 0 este barrel existe apenas para o Drizzle ter um ponto de entrada.
-export {};
+// Ponto único de exportação do schema. Tudo que o app, o drizzle-kit e os
+// testes precisam do modelo relacional sai daqui.
+export * from "./enums";
+export * from "./clubs";
+export * from "./people";
+export * from "./memberships";
+export * from "./competitions";
+export * from "./seasons";
+export * from "./venues";
+export * from "./matches";

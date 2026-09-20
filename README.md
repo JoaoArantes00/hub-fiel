@@ -2,7 +2,7 @@
 
 Acervo digital independente sobre o Sport Club Corinthians Paulista: partidas, jogadores, temporadas, competições e história, navegáveis entre si.
 
-> **Status: Fase 0 (fundação técnica).** Só existe a base do projeto: Next.js, TypeScript, Tailwind, Drizzle + PostgreSQL, testes e CI. Ainda não há domínio, integrações nem páginas reais.
+> **Status: Fase 1 (schema de domínio).** Existem a base técnica (Fase 0) e o schema relacional principal: 15 tabelas com migrations e seed inicial. Ainda não há integrações, admin nem páginas reais.
 
 ## Documentação de referência
 
@@ -73,9 +73,17 @@ Todas são **server-side**: nenhuma usa o prefixo `NEXT_PUBLIC_`, então nunca v
 npm run db:migrate
 ```
 
-Na Fase 0 existe só uma migration baseline vazia (`src/db/migrations/0000_baseline.sql`), que serve para provar que o pipeline funciona. Rodar o comando de novo é seguro.
+São três migrations, aplicadas em ordem: `0000_baseline` (vazia), `0001_domain_schema` (as 15 tabelas, enums, constraints e índices) e `0002_updated_at_triggers` (mantém `updated_at` no banco). Um banco novo e vazio fica pronto só com elas. Rodar o comando de novo é seguro.
 
-### 5. Subir a aplicação
+### 5. Popular os dados iniciais (seed)
+
+```bash
+npm run db:seed
+```
+
+Cria o Sport Club Corinthians Paulista, os times Masculino, Feminino e Sub-20, e as 10 posições padrão (GK, CB, LB, RB, DM, CM, AM, LW, RW, ST). É idempotente: rodar de novo não duplica nem sobrescreve nada.
+
+### 6. Subir a aplicação
 
 ```bash
 npm run dev
@@ -103,11 +111,12 @@ Se o banco estiver inacessível ou `DATABASE_URL` inválida, a resposta é `503`
 | `npm run test:e2e`    | Playwright (desktop e mobile). Precisa de banco e do navegador.       |
 | `npm run db:generate` | Gera uma nova migration a partir do schema Drizzle.                   |
 | `npm run db:migrate`  | Aplica as migrations pendentes.                                       |
+| `npm run db:seed`     | Popula os dados iniciais (idempotente).                               |
 
 ## Testes
 
 - **Unitários e de rota** (`src/**/*.test.ts`): rodam sem banco.
-- **Integração com PostgreSQL** (`src/db/db.integration.test.ts`): só rodam se `DATABASE_URL` estiver definida **no ambiente do shell** (o Vitest não lê `.env.local`). Sem ela aparecem como _skipped_. Para rodar localmente:
+- **Integração com PostgreSQL** (`src/db/**/*.integration.test.ts`): só rodam se `DATABASE_URL` estiver definida **no ambiente do shell** (o Vitest não lê `.env.local`). Sem ela aparecem como _skipped_. Cada arquivo cria **um banco temporário próprio** (`hub_fiel_test_<hash>`), aplica as migrations do zero e o apaga no fim; por isso o usuário da `DATABASE_URL` precisa poder executar `CREATE DATABASE`, e ela deve apontar para um PostgreSQL local ou descartável, nunca para produção. Para rodar localmente:
   - macOS/Linux: `DATABASE_URL="postgresql://..." npm test`
   - PowerShell: `$env:DATABASE_URL = "postgresql://..."; npm test`
 - **E2E** (`tests/e2e`): antes da primeira execução instale o navegador com `npx playwright install chromium`. Com `CI` definida, o Playwright usa `npm run start` (exige `npm run build` antes); sem `CI`, sobe o `npm run dev` sozinho. O banco precisa estar acessível via `DATABASE_URL` no ambiente do shell.
@@ -127,7 +136,7 @@ src/
 ├── app/            # Next.js App Router (páginas e rotas de API)
 ├── modules/        # domínio, um módulo por entidade (a partir da Fase 1)
 ├── integrations/   # provedores externos, ex.: API-Football (a partir da Fase 2)
-├── db/             # cliente Drizzle, schema/ e migrations/
+├── db/             # cliente Drizzle, schema/, migrations/, seed/ e testing/ (helpers de teste)
 ├── jobs/           # jobs de sincronização (a partir da Fase 3)
 ├── shared/         # utilitários, validação, erros e componentes compartilhados
 └── config/         # configuração e validação de variáveis de ambiente

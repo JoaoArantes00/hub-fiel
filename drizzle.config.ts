@@ -8,7 +8,9 @@ loadEnvConfig(process.cwd());
 
 export default defineConfig({
   dialect: "postgresql",
-  schema: "./src/db/schema",
+  // Só o barrel: apontar para o diretório faria o drizzle-kit importar também os
+  // arquivos de teste que ficam ao lado das tabelas.
+  schema: "./src/db/schema/index.ts",
   out: "./src/db/migrations",
   dbCredentials: {
     url: getEnv().DATABASE_URL,
