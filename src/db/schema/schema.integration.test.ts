@@ -22,10 +22,10 @@ import {
 } from "../testing/test-database";
 import {
   CHECK_VIOLATION,
+  DELETE_RESTRICT_VIOLATION,
   expectViolation,
   FOREIGN_KEY_VIOLATION,
   INVALID_ENUM_VALUE,
-  RESTRICT_VIOLATION,
   UNIQUE_VIOLATION,
 } from "../testing/violations";
 import * as s from "./index";
@@ -76,7 +76,7 @@ describe.skipIf(!process.env.DATABASE_URL)("schema de domínio", () => {
       const { club } = await insertClubAndTeam(db);
 
       await expectViolation(db.delete(s.clubs).where(eq(s.clubs.id, club.id)), {
-        code: RESTRICT_VIOLATION,
+        code: DELETE_RESTRICT_VIOLATION,
         constraint: "teams_club_id_clubs_id_fk",
       });
     });

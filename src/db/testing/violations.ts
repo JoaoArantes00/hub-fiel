@@ -3,8 +3,17 @@ import { expect } from "vitest";
 // SQLSTATE relevantes (https://www.postgresql.org/docs/current/errcodes-appendix.html).
 export const UNIQUE_VIOLATION = "23505";
 export const FOREIGN_KEY_VIOLATION = "23503";
-// ON DELETE RESTRICT levanta 23001 (restrict_violation); 23503 é do NO ACTION.
 export const RESTRICT_VIOLATION = "23001";
+
+/**
+ * SQLSTATE ao apagar uma linha referenciada por FK com ON DELETE RESTRICT. Depende
+ * da versão do PostgreSQL: o 17 (usado no CI) levanta 23503 (foreign_key_violation)
+ * e o 18 levanta 23001 (restrict_violation). O nome da constraint segue igual.
+ */
+export const DELETE_RESTRICT_VIOLATION = [
+  FOREIGN_KEY_VIOLATION,
+  RESTRICT_VIOLATION,
+] as const;
 export const CHECK_VIOLATION = "23514";
 export const INVALID_ENUM_VALUE = "22P02";
 
@@ -29,7 +38,7 @@ function findPgError(error: unknown): PgErrorLike | null {
  */
 export async function expectViolation(
   operation: PromiseLike<unknown>,
-  expected: { code: string; constraint?: string },
+  expected: { code: string | readonly string[]; constraint?: string },
 ) {
   const error = await Promise.resolve(operation).then(
     () => null,
@@ -39,7 +48,7 @@ export async function expectViolation(
 
   const pgError = findPgError(error);
   expect(pgError, "erro do PostgreSQL não encontrado na cadeia").not.toBeNull();
-  expect(pgError?.code).toBe(expected.code);
+  expect([expected.code].flat()).toContain(pgError?.code);
   if (expected.constraint) {
     expect(pgError?.constraint_name).toBe(expected.constraint);
   }
